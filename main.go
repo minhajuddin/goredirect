@@ -1,37 +1,38 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"github.com/alphazero/Go-Redis"
 	"log"
 	"net/http"
 	"os"
-	"github.com/alphazero/Go-Redis"
-	"errors"
 )
 
 var config map[string]string
 var client redis.Client
 
-func main(){
+func main() {
 	port := os.Getenv("PORT")
 	log.Println("loading cofing")
 	spec := redis.DefaultSpec()
-	client,_ = redis.NewSynchClientWithSpec(spec);
+	client, _ = redis.NewSynchClientWithSpec(spec)
 	log.Printf("Started redirector at %v\n", port)
 	http.ListenAndServe(":"+port, &redirector{})
 }
 
-func getHost(host string) (string, error){
+func getHost(host string) (string, error) {
 	var err error
 	lbytes, err := client.Get(host)
-	if err == nil &&  len(lbytes) == 0 {
+	if err == nil && len(lbytes) == 0 {
 		err = errors.New("Location not found")
 	}
 	return string(lbytes), err
 }
 
 type redirector struct{}
-func (self *redirector) ServeHTTP(w http.ResponseWriter, r *http.Request){
+
+func (self *redirector) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	host := r.Host
 	location, err := getHost(host)
 	if err != nil {
