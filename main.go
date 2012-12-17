@@ -5,18 +5,37 @@ import (
 	"fmt"
 	"github.com/alphazero/Go-Redis"
 	"log"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
+	"strconv"
 )
 
 var config map[string]string
 var client redis.Client
 
 func main() {
+	var err error
 	port := os.Getenv("PORT")
-	log.Println("loading cofing")
-	spec := redis.DefaultSpec()
-	client, _ = redis.NewSynchClientWithSpec(spec)
+	redisUrl, err := url.Parse(os.Getenv("MYREDIS_URL"))
+	if err != nil {
+		log.Println(err)
+	}
+	redisHost, redisPortStr, err := net.SplitHostPort(redisUrl.Host)
+	if err != nil {
+		log.Println(err)
+	}
+	redisPort, err := strconv.Atoi(redisPortStr)
+	if err != nil {
+		log.Println(err)
+	}
+	redisPwd, _ := redisUrl.User.Password()
+	spec := redis.DefaultSpec().Host(redisHost).Port(redisPort).Password(redisPwd)
+	client, err = redis.NewSynchClientWithSpec(spec)
+	if err != nil {
+		log.Fatal(err)
+	}
 	log.Printf("Started redirector at %v\n", port)
 	http.ListenAndServe(":"+port, &redirector{})
 }
