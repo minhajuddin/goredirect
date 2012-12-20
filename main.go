@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	connectToRedis()
+	openDb()
 	startWebServer()
 }
 
@@ -26,9 +26,9 @@ func startWebServer() {
 }
 
 func httpHandler(w http.ResponseWriter, r *http.Request) {
-	location, err := getHost(r.Host)
+	location, ok := getHost(r.Host)
 
-	if err != nil {
+	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(w, "Did not find config for '%s'\n", r.Host)
 		return
