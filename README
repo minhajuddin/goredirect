@@ -2,3 +2,9 @@ goredirect
 ==========
 
 A simple utility webapp which allows you to setup redirects easily
+
+Sample redirects.json file
+
+{
+	"localhost:5000": "http://cosmicvent.com"
+}

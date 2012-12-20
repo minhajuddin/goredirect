@@ -21,7 +21,7 @@ func startWebServer() {
 	http.HandleFunc("/", httpHandler)
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
-	  log.Fatal("unable to start web server", err)
+		log.Fatal("unable to start web server", err)
 	}
 }
 
