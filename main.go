@@ -32,9 +32,9 @@ func getHost(host string) (string, error) {
 	lbytes, err := client.Get(host)
 	if err != nil {
 		log.Println("REDIS ERROR", err)
-	}
-	if err == nil && len(lbytes) == 0 {
-		err = errors.New("Location not found")
+	} else if len(lbytes) == 0 {
+		err = errors.New("Location not found for config:"+ host)
+		log.Println(err)
 	}
 	return string(lbytes), err
 }
@@ -56,22 +56,12 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 	location, err := getHost(r.Host)
 
 	if err != nil {
-		handleError(w, r, err)
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, "Did not find config for '%s'\n", r.Host)
 		return
 	}
-
 	http.Redirect(w, r, location, http.StatusMovedPermanently)
 }
-
-//error handler
-func handleError(w http.ResponseWriter, r *http.Request, err error) {
-	log.Println(err)
-	message := fmt.Sprintf("Did not find config for '%s'\n", r.Host)
-	log.Println(message)
-	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte(message))
-}
-
 //end of web server stuff
 
 func main() {
